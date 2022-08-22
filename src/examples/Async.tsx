@@ -1,27 +1,46 @@
 import {Container, Heading, Text} from '@chakra-ui/layout'
 import {Select} from '@chakra-ui/select'
-import {atom, useRecoilState, useRecoilValue, selector} from 'recoil'
-import {Suspense} from 'react'
+import {atom, useRecoilState, useRecoilValue, selector, selectorFamily} from 'recoil'
+import {Suspense, useState} from 'react'
 
-const userIdState = atom<number | undefined>({
-    key: 'userId',
-    default: undefined,
-})
+// const userIdState = atom<number | undefined>({
+//     key: 'userId',
+//     default: undefined,
+// })
 
-const userState = selector({
+const userState = selectorFamily({
     key: 'user',
-    get: async ({get}) => {
-        const userId = get(userIdState)
-        if (userId === undefined) return
+    get: (userId: number) => async () => {
+        // const userId = get(userIdState)
+        // if (userId === undefined) return
 
         const userData = await fetch(`https://jsonplaceholder.typicode.com/users/${userId}`).then((res) => res.json())
         return userData
     },
 })
 
+const UserData = ({userId}: {userId: number}) => {
+    const user = useRecoilValue(userState(userId))
+    // if (!user) return null
+
+    return (
+        <div>
+            <Heading as="h2" size="md" mb={1}>
+                User data:
+            </Heading>
+            <Text>
+                <b>Name:</b> {user.name}
+            </Text>
+            <Text>
+                <b>Phone:</b> {user.phone}
+            </Text>
+        </div>
+    )
+}
+
 export const Async = () => {
-    const [userId, setUserId] = useRecoilState(userIdState)
-    const user = useRecoilValue(userState)
+    // const [userId, setUserId] = useRecoilState(userIdState)
+    const [userId, setUserId] = useState<undefined | number>(undefined)
 
     return (
         <Container py={10}>
@@ -44,21 +63,11 @@ export const Async = () => {
                 <option value="2">User 2</option>
                 <option value="3">User 3</option>
             </Select>
-            <Suspense fallback={<div>laoding...</div>}>
-                {userId !== undefined && (
-                    <div>
-                        <Heading as="h2" size="md" mb={1}>
-                            User data:
-                        </Heading>
-                        <Text>
-                            <b>Name:</b> {user.name}
-                        </Text>
-                        <Text>
-                            <b>Phone:</b> {user.phone}
-                        </Text>
-                    </div>
-                )}
-            </Suspense>
+            {userId !== undefined && (
+                <Suspense fallback={<div>laoding...</div>}>
+                    <UserData userId={userId} />
+                </Suspense>
+            )}
         </Container>
     )
 }
