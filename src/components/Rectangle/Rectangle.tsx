@@ -17,7 +17,7 @@ export const elementState = atomFamily<Element, number>({
     default: {
         style: {
             position: {top: 0, left: 0},
-            size: {width: 50, height: 50},
+            size: {width: 200, height: 200},
         },
     },
 })
